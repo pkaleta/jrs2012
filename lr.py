@@ -23,22 +23,40 @@ def sigmoid(z):
     return 1.0 / (1.0 + np.exp(-z))
 
 
-def likelihood(theta, X, y):
+def jacobian(theta, X, y):
+    n, m = X.shape
+
     alpha = sigmoid(X.dot(theta))
-    val = y.dot(np.log(alpha)) + (1.0 - y).dot(np.log(1.0 - alpha))
+    gradient = X.T.dot(alpha - y) + 1.0 * theta / (2.0 * n)
+
+    return gradient
+
+
+def likelihood(theta, X, y):
+    n, m = X.shape
+    alpha = sigmoid(X.dot(theta))
+
+    val = (
+        -y.dot(np.log(alpha)) - (1.0 - y).dot(np.log(1.0 - alpha)) +
+        1.0 * theta.dot(theta) / 2.0  # regularization term
+    ) / (2.0 * n)
+    print val
     return val
 
 
 def train(X, y):
     n, m = X.shape
     theta = np.zeros(m)
-    theta, _, _ = minimize(
+    return minimize(
         likelihood,
         theta,
         args=(X, y),
         method='L-BFGS-B',
+        options={'disp': True},
+        jac=jacobian,
     )
 
 
 if __name__ == '__main__':
-    train(X, labels[:, 0])
+    theta = train(X, labels[:, 0])
+    import ipdb; ipdb.set_trace()
