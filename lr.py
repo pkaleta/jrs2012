@@ -47,6 +47,7 @@ def train(X, y):
 
 
 def mle(X, labels, i):
+    print '***** Processing column:', i
     result = train(X, labels[:, i])
     np.savetxt(
         'params/%d.csv' % i,
@@ -70,4 +71,4 @@ if __name__ == '__main__':
             labels[i, np.array(row_labels) - 1] = 1
 
     pool = Pool(5)
-    pool.map(partial(mle, X, labels), range(0, 2))  # TODO: N_LABELS
+    pool.map(partial(mle, X, labels), range(0, N_LABELS))
