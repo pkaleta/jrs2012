@@ -88,7 +88,7 @@ def predict():
         filename = 'params/%d.csv' % i
         Theta[:, i] = np.loadtxt(filename)
 
-    result = sigmoid(X.dot(Theta)) >= 0.5
+    result = sigmoid(X.dot(Theta)) >= 0.25
     np.savetxt('prediction.csv', result, delimiter='\t')
 
 
