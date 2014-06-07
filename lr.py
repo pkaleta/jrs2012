@@ -3,6 +3,7 @@ from multiprocessing import Pool
 from scipy.optimize import minimize
 import numpy as np
 import pandas as pd
+import sys
 
 
 N_LABELS = 83
@@ -27,13 +28,12 @@ def likelihood(theta, X, y):
 
     val = (
         -y.dot(np.log(alpha)) - (1.0 - y).dot(np.log(1.0 - alpha)) +
-        1.0 * theta.dot(theta)  # regularization term
-    ) / (2.0 * n)
-    print val
+        (1.0 * theta.dot(theta) / 2.0)  # regularization term
+    ) / n
     return val
 
 
-def train(X, y):
+def train_single_label(X, y):
     n, m = X.shape
     theta = np.zeros(m)
     return minimize(
@@ -48,7 +48,7 @@ def train(X, y):
 
 def mle(X, labels, i):
     print '***** Processing column:', i
-    result = train(X, labels[:, i])
+    result = train_single_label(X, labels[:, i])
     np.savetxt(
         'params/%d.csv' % i,
         result.x,
@@ -56,12 +56,16 @@ def mle(X, labels, i):
     )
 
 
-if __name__ == '__main__':
-    X = pd.read_csv(
-        'data/trainingData.csv',
+def read_csv(filename):
+    return pd.read_csv(
+        filename,
         delimiter='\t',
         header=None,
     ).values
+
+
+def train():
+    X = read_csv('data/testData.csv')
     nrows, ncols = X.shape
 
     labels = np.zeros((nrows, N_LABELS))
@@ -71,4 +75,24 @@ if __name__ == '__main__':
             labels[i, np.array(row_labels) - 1] = 1
 
     pool = Pool(5)
-    pool.map(partial(mle, X, labels), range(0, N_LABELS))
+    pool.map(partial(mle, X, labels), range(N_LABELS))
+
+
+def predict():
+    X = read_csv('data/testData.csv')
+    nrows, ncols = X.shape
+
+    Theta = np.zeros((nrows, N_LABELS))
+    for i in xrange(N_LABELS):
+        filename = '%d.csv' % i
+        Theta[:, i] = np.loadtxt(filename)
+
+    result = sigmoid(X * Theta) > 0
+    np.savetxt('prediction.csv', result, delimiter='\t')
+
+
+if __name__ == '__main__':
+    if sys.argv[1] == 'train':
+        train()
+    else:
+        predict()
