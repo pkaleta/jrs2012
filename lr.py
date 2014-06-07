@@ -65,7 +65,7 @@ def read_csv(filename):
 
 
 def train():
-    X = read_csv('data/testData.csv')
+    X = read_csv('data/trainingData.csv')
     nrows, ncols = X.shape
 
     labels = np.zeros((nrows, N_LABELS))
