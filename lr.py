@@ -7,6 +7,7 @@ import sys
 
 
 N_LABELS = 83
+LAMBDA = 5.0
 
 
 def sigmoid(z):
@@ -17,7 +18,7 @@ def jacobian(theta, X, y):
     n, m = X.shape
 
     alpha = sigmoid(X.dot(theta))
-    gradient = (X.T.dot(alpha - y) + 1.0 * theta) / (2.0 * n)
+    gradient = (X.T.dot(alpha - y) + LAMBDA * theta) / n
 
     return gradient
 
@@ -28,7 +29,7 @@ def likelihood(theta, X, y):
 
     val = (
         -y.dot(np.log(alpha)) - (1.0 - y).dot(np.log(1.0 - alpha)) +
-        (1.0 * theta.dot(theta) / 2.0)  # regularization term
+        (LAMBDA * theta.dot(theta) / 2.0)  # regularization term
     ) / n
     return val
 
@@ -84,7 +85,7 @@ def predict():
 
     Theta = np.zeros((nrows, N_LABELS))
     for i in xrange(N_LABELS):
-        filename = '%d.csv' % i
+        filename = 'params/%d.csv' % i
         Theta[:, i] = np.loadtxt(filename)
 
     result = sigmoid(X.dot(Theta)) >= 0.5
