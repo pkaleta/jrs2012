@@ -76,20 +76,28 @@ def train():
             labels[i, np.array(row_labels) - 1] = 1
 
     pool = Pool(5)
-    pool.map(partial(mle, X, labels), range(N_LABELS))
+    pool.map(partial(mle, X, labels), range(N_LABELS - 1, -1, -1))
 
 
 def predict():
     X = read_csv('data/testData.csv')
     nrows, ncols = X.shape
 
-    Theta = np.zeros((nrows, N_LABELS))
+    Theta = np.zeros((ncols, N_LABELS))
     for i in xrange(N_LABELS):
         filename = 'params/%d.csv' % i
         Theta[:, i] = np.loadtxt(filename)
 
-    result = sigmoid(X.dot(Theta)) >= 0.25
-    np.savetxt('prediction.csv', result, delimiter='\t')
+    result = (sigmoid(X.dot(Theta)) >= 0.15).astype(int)
+
+    lines = []
+    for row in xrange(nrows):
+        labels, = np.where(result[row, :])
+        lines.append(','.join(map(str, list(labels + 1))) + '\n')
+
+    print lines
+    with open('predictions.csv', 'w') as fp:
+        fp.writelines(lines)
 
 
 if __name__ == '__main__':
